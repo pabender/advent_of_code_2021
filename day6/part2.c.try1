@@ -1,0 +1,71 @@
+#include "common.h"
+
+int fishCountValue;
+
+typedef struct fish_node {
+    short days;
+    struct fish_node *next;
+} fish;
+
+fish *head = NULL;
+fish *tail = NULL;
+
+void insert(int value){
+  if(head==NULL){
+      head = malloc(sizeof(fish));
+      head->days=value;
+      tail=head;
+  } else {
+      tail->next = malloc(sizeof(fish));
+      tail->days=value;
+      tail = tail->next;
+  }
+}
+
+fish *initFishList(char *input){
+    int currentFish=0;
+    char *nextValue = strtok(input,",");
+    while(nextValue!=NULL){
+        insert(atoi(nextValue));
+        currentFish++;
+        nextValue = strtok(NULL,",");
+    }
+    printf("array count %i\n",currentFish);
+    fishCountValue = currentFish;
+    return head;
+}
+
+int simulateDay(fish *fishList,int startingFish){
+    int endingFish = startingFish;
+    fish *current=fishList;
+    for(int fish = 0;fish<startingFish;fish++){
+        printf("%i\n",fish);
+        if(current->days==0){
+            current->days=6;
+            insert(8);
+            endingFish++;
+        } else {
+            current->days--;
+        }
+        current=current->next;
+    }
+    return endingFish;
+}
+
+int main(int argc,char **argv){
+
+   list *input = stringList(argv[1]);
+   //printList(input);
+   
+   fish *fishList = initFishList(input->data[0]);  
+   int initialFishCount = fishCountValue;
+
+   for(int i=0;i<80;i++){
+       printf("%i count %i\n",i,initialFishCount);
+      initialFishCount = simulateDay(fishList,initialFishCount);
+   }
+
+   printf("The final fish count is %i\n",initialFishCount);
+
+   return 0;
+}
