@@ -63,7 +63,7 @@ void printPaper(){
    for(int i=0;i<=maxy;i++){
       for(int j=0;j<=maxx;j++){
           if(paper[j][i]==1) {
-              printf("%c",219);
+              printf("#");
           } else {
               printf(" ");
           }
