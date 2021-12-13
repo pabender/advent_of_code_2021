@@ -60,9 +60,9 @@ void parseInput(list input){
 }
 
 void printPaper(){
-   for(int i=0;i<=maxy;i++){
-      for(int j=0;j<=maxx;j++){
-          if(paper[j][i]==1) {
+   for(int j=0;j<=maxy;j++){
+      for(int i=0;i<=maxx;i++){
+          if(paper[i][j]==1) {
               printf("#");
           } else {
               printf(" ");
@@ -85,11 +85,9 @@ int countDots(){
 void foldx(int position){
     for(int i=0;i<=position;i++)
         for(int j=0;j<=maxy;j++){
-            if(paper[i][j]==1 || paper[maxx-i][j]==1){
+            if(paper[(2*position)-i][j]==1){
                 //printf("set position (%i,%i)\n",i,j);
                 paper[i][j]=1;
-            } else {
-                paper[i][j]=0;
             }
         }
     maxx=position-1;
@@ -98,11 +96,9 @@ void foldx(int position){
 void foldy(int position){
     for(int j=0;j<=position;j++)
         for(int i=0;i<=maxx;i++){
-            if(paper[i][j]==1 || paper[i][maxy-j]==1){
+            if(paper[i][(2*position)-j]==1){
                 //printf("set position (%i,%i)\n",i,j);
                 paper[i][j]=1;
-            } else {
-                paper[i][j]=0;
             }
         }
     maxy=position-1;
