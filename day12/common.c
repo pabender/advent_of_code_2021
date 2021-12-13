@@ -6,10 +6,10 @@ list *stringList(char *fileName){
     FILE *f = fopen(fileName,"r");
     int rows = 0;
 
-    fscanf(f," %[^\n]",&buffer);
+    fscanf(f," %[^\n]",buffer);
     do {
         rows++;
-        fscanf(f," %[^\n]",&buffer);
+        fscanf(f," %[^\n]",buffer);
     } while(!feof(f));
 
     fseek(f,0,SEEK_SET);
@@ -17,7 +17,7 @@ list *stringList(char *fileName){
     retValue = malloc(sizeof(char *)*rows);
     
     for(int i=0;i<rows;i++){
-       fscanf(f, " %[^\n]",&buffer);
+       fscanf(f, " %[^\n]",buffer);
        retValue[i] = malloc(sizeof(char)*(strlen(buffer)+1));
        strcpy(retValue[i],buffer); 
     }
