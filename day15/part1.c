@@ -23,6 +23,13 @@ void initGrid(list input){
     
 }
 
+int gridValue(int x,int y){
+    if(x<0 || y<0 || x>=xmax || y>=ymax){
+        return 10;
+    }
+    return grid[x][y];
+}
+
 int getMinPath(int x,int y,int goalx,int goaly){
     //    printf("%i %i\n",x,y);
     if(minPaths[x][y]>=0){
@@ -31,12 +38,12 @@ int getMinPath(int x,int y,int goalx,int goaly){
     if(x==goalx && y==goaly) 
         return grid[x][y];
     else if((x+1)<xmax && (y+1)<ymax){
-       minPaths[x][y]=min(grid[x+1][y]+getMinPath(x+1,y,goalx,goaly),
-               grid[x][y+1]+getMinPath(x,y+1,goalx,goaly));
+       minPaths[x][y]=min(gridValue(x+1,y)+getMinPath(x+1,y,goalx,goaly),
+               gridValue(x,y+1)+getMinPath(x,y+1,goalx,goaly));
     } else if(x+1<xmax) {
-        minPaths[x][y]=grid[x+1][y]+getMinPath(x+1,y,goalx,goaly);
+        minPaths[x][y]=gridValue(x+1,y)+getMinPath(x+1,y,goalx,goaly);
     } else {
-        minPaths[x][y]=grid[x][y+1]+getMinPath(x,y+1,goalx,goaly);
+        minPaths[x][y]=gridValue(x,y+1)+getMinPath(x,y+1,goalx,goaly);
     }
     return minPaths[x][y];
 }
