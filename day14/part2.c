@@ -115,7 +115,7 @@ int main(int argc,char **argv){
    fclose(temp);
 
    for(int i=1;i<=40;i++) {
-       printf("%i\n",i);
+      printf("%i\n",i);
       char infilename[10];
       char outfilename[10];
 
@@ -124,6 +124,7 @@ int main(int argc,char **argv){
 
       replace(infilename,outfilename);
       //printf("%s\n",result);
+      unlink(infilename);
    }
    printf("result found\n");
 
