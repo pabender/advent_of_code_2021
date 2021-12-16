@@ -6,6 +6,8 @@ int xmax;
 int ymax;
 int minPaths[1000][1000];
 
+int visited[1000][1000];
+
 void initGrid(list input){
     xmax=strlen(input.data[0]);
     ymax=input.size;
@@ -14,13 +16,24 @@ void initGrid(list input){
            grid[x][y]=input.data[y][x]-'0';
        }
     }
+
     for(int y=0;y<ymax;y++){
        for(int x=0;x<xmax;x++){
            minPaths[x][y]=-1;
        }
     }
 
-    
+    for(int y=0;y<ymax;y++){
+       for(int x=0;x<xmax;x++){
+           visited[x][y]=-1;
+       }
+    }
+}
+
+int allowed(int x,int y){
+    if(visited[x][y]!=0) {
+        return 0;
+    }
 }
 
 int gridValue(int x,int y){
@@ -47,7 +60,6 @@ int getMinPath(int x,int y,int goalx,int goaly){
     }
     return minPaths[x][y];
 }
-
 
 int greedyMinPath(int x,int y,int goalx,int goaly){
     int score =0;
@@ -90,7 +102,7 @@ int main(int argc,char **argv){
 
    initGrid(*input);
 
-   getMinPath(0,0,xmax-1,ymax-1);
+   printf("min path %i\n",getMinPath(0,0,xmax-1,ymax-1));
 
    for(int y=0;y<ymax;y++){
        for(int x=0;x<xmax;x++){
@@ -98,8 +110,15 @@ int main(int argc,char **argv){
        }
        printf("\n");
    }
+   printf("\n");
 
-   printf("min path %i\n",getMinPath(0,0,xmax-1,ymax-1));
+   /*for(int y=0;y<ymax;y++){
+       for(int x=0;x<xmax;x++){
+           printf("%5i ",greedyMinPath(x,y,xmax-1,ymax-1));
+       }
+       printf("\n");
+   }*/
+
    printf("greedy %i\n",greedyMinPath(0,0,xmax-1,ymax-1));
    printf("reverse greedy %i\n",greedyReverseMinPath());
 
