@@ -14,11 +14,12 @@ int decodePacket(char *rawPacket,packet *onepacket);
 int decodePackets(char *input,packet *packetArray){
     int bitsConsumed=0;
     int numPacketsConsumed=0;
-    while(bitsConsumed<(strlen(input)-4)){
+    while(bitsConsumed<(strlen(input)-8)){
         //printf("decode packets %i bits %i\n",numPacketsConsumed,bitsConsumed);
         bitsConsumed+=decodePacket(input+bitsConsumed
                 ,packetArray+numPacketsConsumed);
         numPacketsConsumed++;
+        //printf("decode packets %i bits %i\n",numPacketsConsumed,bitsConsumed);
     }
         //printf("decoded packets %i bits %i\n",numPacketsConsumed,bitsConsumed);
     return numPacketsConsumed;
@@ -31,6 +32,7 @@ int decodeSubPackets(char *input,packet *packetArray){
         //printf("decode packets %i bits %i\n",numPacketsConsumed,bitsConsumed);
         bitsConsumed+=decodePacket(input+bitsConsumed,packetArray+numPacketsConsumed);
         numPacketsConsumed++;
+        //printf("decode packets %i bits %i\n",numPacketsConsumed,bitsConsumed);
     }
         //printf("decoded packets %i bits %i\n",numPacketsConsumed,bitsConsumed);
     return numPacketsConsumed;
@@ -40,18 +42,19 @@ int decodeNPackets(char *input,packet *packetArray,int count){
     int bitsConsumed=0;
     int numPacketsConsumed = 0;
     while(numPacketsConsumed<count){
-        printf("decode %i packets %i bits %i\n",count,numPacketsConsumed,bitsConsumed);
-        bitsConsumed+=decodePacket(input+bitsConsumed,packetArray+numPacketsConsumed);
+        //printf("decode %i packets %i bits %i\n",count,numPacketsConsumed,bitsConsumed);
+        //printf("%s\n",input+bitsConsumed);
+	bitsConsumed+=decodePacket(input+bitsConsumed,packetArray+numPacketsConsumed);
         numPacketsConsumed++;
     }
-    printf("decoded %i packets %i bits %i\n",count,numPacketsConsumed,bitsConsumed);
+    //printf("decoded %i packets %i bits %i\n",count,numPacketsConsumed,bitsConsumed);
     return bitsConsumed;
 }
 
 
 int decodePacket(char *rawPacket,packet *onepacket){
 
-    printf("raw packet %s\n",rawPacket);
+    //printf("raw packet %s\n",rawPacket);
 
     char versionString[4];
     versionString[0]=rawPacket[0];
@@ -69,7 +72,7 @@ int decodePacket(char *rawPacket,packet *onepacket){
     onepacket->type=bitsToInt(typeString);
     onepacket->subPacketCount=0;
 
-    //printf("next packet %i %i\n",onepacket->version,onepacket->type);
+    printf("next packet version %i type %i\n",onepacket->version,onepacket->type);
 
     int i=6;
     switch(onepacket->type){
@@ -92,41 +95,32 @@ int decodePacket(char *rawPacket,packet *onepacket){
                }
                break;
         default: {
-                     printf("operator\n");
+                     printf("operator %i version %i\n",onepacket->type, onepacket->version);
                      //operator packet
                      char lengthType = rawPacket[i];
                      i=i+1;
+                     printf("sub packet type %c\n",lengthType);
                      if(lengthType=='0'){
                          //next 15 bits represent the 
                          //number of bits for sub packets
-                         printf("sub packet type 0 %c\n",lengthType);
                          char subPacketLengthBits[16];
-                         for(int j=0;j<15;j++){
-                             subPacketLengthBits[j]=rawPacket[i];
-                             i++;
-                         }
-                         subPacketLengthBits[15]='\0';
+			 strncpy(subPacketLengthBits,rawPacket+i,15);
+			 i+=15;
                          printf("%s\n%",subPacketLengthBits);
                          int subPacketLength=bitsToInt(subPacketLengthBits);
-                         printf("sub packet length %i\n",subPacketLength);
-
-                         for(int j=0;j<subPacketLength;j++){
-                            onepacket->data[j]=rawPacket[i];
-                            i++;
-                         }
-                         onepacket->data[subPacketLength]='\0';
+                         printf("sub packet length %s %i\n",subPacketLengthBits,subPacketLength);
+                         strncpy(onepacket->data,rawPacket+i,subPacketLength);
                          onepacket->subPackets=malloc(sizeof(packet)*10);
                          onepacket->subPacketCount = 
                              decodeSubPackets(onepacket->data,
                                      onepacket->subPackets);
-                         //printf("%i\n",onepacket->subPacketCount);
+			 //printf("count %i length %i\n",onepacket->subPacketCount,subPacketLength);
                          i+=subPacketLength;
 
                      }
                      else { //lengthType=1
                          //next 11 bits represent the number of
                          //sub packes contained in this packet
-                         printf("sub packet type 1\n");
                          char subPacketCountBits[12];
                          for(int j=0;j<11;j++){
                              subPacketCountBits[j]=rawPacket[i];
@@ -134,12 +128,13 @@ int decodePacket(char *rawPacket,packet *onepacket){
                          }
                          subPacketCountBits[11]='\0';
                          int subPacketCount=bitsToInt(subPacketCountBits);
+                         printf("sub packet count %s %i\n",subPacketCountBits,subPacketCount);
                          onepacket->subPacketCount = subPacketCount;
                          onepacket->subPackets=malloc(sizeof(packet)*10);
-                         printf("%i %i %s\n",strlen(rawPacket),i,rawPacket+i);
+                         //printf("%i %i %s\n",strlen(rawPacket),i,rawPacket+i);
                          i+=decodeNPackets(rawPacket+i,
-                                     onepacket->subPackets,subPacketCount);
-                         printf("%i %i %s\n",strlen(rawPacket),i,rawPacket+i);
+                                     onepacket->subPackets,onepacket->subPacketCount);
+                         //printf("%i %i %s\n",strlen(rawPacket),i,rawPacket+i);
                          //printf("%i\n",onepacket->subPacketCount);
                      }
                  }
@@ -285,7 +280,7 @@ int main(int argc,char **argv){
 
    int numPackets=0;
 
-   packet packets[2000];
+   packet packets[3000];
 
    list *input = stringList(argv[1]);
    //printList(input);
@@ -296,7 +291,7 @@ int main(int argc,char **argv){
    numPackets += decodePackets(bits,packets);
    //printf("all decoded\n");
    
-   printPackets(packets,numPackets);
+   //printPackets(packets,numPackets);
 
    printf("version sum: %i\n",packetVersionSum(packets,numPackets));
 
