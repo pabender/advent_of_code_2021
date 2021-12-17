@@ -1,3 +1,6 @@
+#ifndef __COMMON_H
+#define __COMMON_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,5 +18,8 @@ typedef struct data_list {
 list *stringList(char *fileName);
 void printList(list *data);
 int bitsToInt(char *bits);
+unsigned long long bitsToLLU(char *bits);
 int *stringToIntArray(char *input);
 int getArraySize();
+char *hexToBits(char *input);
+#endif
