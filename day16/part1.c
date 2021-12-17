@@ -3,7 +3,7 @@
 typedef struct __packet{
     int version;
     int type;
-    char data[256];
+    char data[100];
     int subPacketCount;
     struct __packet *subPackets;
 } packet;
@@ -29,7 +29,7 @@ int decodeSubPackets(char *input,packet *packetArray){
     int bitsConsumed=0;
     int numPacketsConsumed=0;
     while(bitsConsumed<strlen(input)){
-        //printf("decode packets %i bits %i\n",numPacketsConsumed,bitsConsumed);
+       printf("decode packets %i bits %i\n",numPacketsConsumed,bitsConsumed);
         bitsConsumed+=decodePacket(input+bitsConsumed,packetArray+numPacketsConsumed);
         numPacketsConsumed++;
         //printf("decode packets %i bits %i\n",numPacketsConsumed,bitsConsumed);
@@ -72,12 +72,12 @@ int decodePacket(char *rawPacket,packet *onepacket){
     onepacket->type=bitsToInt(typeString);
     onepacket->subPacketCount=0;
 
-    printf("next packet version %i type %i\n",onepacket->version,onepacket->type);
+    //printf("next packet version %i type %i\n",onepacket->version,onepacket->type);
 
     int i=6;
     switch(onepacket->type){
         case 4:{
-                   printf("litteral\n");
+                   //printf("litteral\n");
                    // litteralValue
                    int dataCount=0;
                    // read groups of 5 bits;
@@ -95,24 +95,25 @@ int decodePacket(char *rawPacket,packet *onepacket){
                }
                break;
         default: {
-                     printf("operator %i version %i\n",onepacket->type, onepacket->version);
+                     //printf("operator %i version %i\n",onepacket->type, onepacket->version);
                      //operator packet
                      char lengthType = rawPacket[i];
                      i=i+1;
-                     printf("sub packet type %c\n",lengthType);
+                     //printf("sub packet type %c\n",lengthType);
                      if(lengthType=='0'){
                          //next 15 bits represent the 
                          //number of bits for sub packets
                          char subPacketLengthBits[16];
 			 strncpy(subPacketLengthBits,rawPacket+i,15);
 			 i+=15;
-                         printf("%s\n%",subPacketLengthBits);
+                         //printf("%s\n%",subPacketLengthBits);
                          int subPacketLength=bitsToInt(subPacketLengthBits);
-                         printf("sub packet length %s %i\n",subPacketLengthBits,subPacketLength);
-                         strncpy(onepacket->data,rawPacket+i,subPacketLength);
+                         //printf("sub packet length %s %i\n",subPacketLengthBits,subPacketLength);
+                         char *bitsarray = malloc(sizeof(char)*(subPacketLength+1));
+                         strncpy(bitsarray,rawPacket+i,subPacketLength);
                          onepacket->subPackets=malloc(sizeof(packet)*10);
                          onepacket->subPacketCount = 
-                             decodeSubPackets(onepacket->data,
+                             decodeSubPackets(bitsarray,
                                      onepacket->subPackets);
 			 //printf("count %i length %i\n",onepacket->subPacketCount,subPacketLength);
                          i+=subPacketLength;
@@ -128,7 +129,7 @@ int decodePacket(char *rawPacket,packet *onepacket){
                          }
                          subPacketCountBits[11]='\0';
                          int subPacketCount=bitsToInt(subPacketCountBits);
-                         printf("sub packet count %s %i\n",subPacketCountBits,subPacketCount);
+                         //printf("sub packet count %s %i\n",subPacketCountBits,subPacketCount);
                          onepacket->subPacketCount = subPacketCount;
                          onepacket->subPackets=malloc(sizeof(packet)*10);
                          //printf("%i %i %s\n",strlen(rawPacket),i,rawPacket+i);

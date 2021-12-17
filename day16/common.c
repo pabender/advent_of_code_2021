@@ -46,6 +46,16 @@ int bitsToInt(char *bits){
         return result;
 }
 
+unsigned long long bitsToLLU(char *bits){
+    unsigned long long result = 0;
+    int bitlength = strlen(bits);
+    for(int i=0;i<bitlength;i++){
+        if(bits[i]=='1')
+          result |= (0x01<<((bitlength-1)-i));
+    }
+        return result;
+}
+
 static int arraySize;
 
 int *stringToIntArray(char *input){

@@ -15,5 +15,6 @@ typedef struct data_list {
 list *stringList(char *fileName);
 void printList(list *data);
 int bitsToInt(char *bits);
+unsigned long long bitsToLLU(char *bits);
 int *stringToIntArray(char *input);
 int getArraySize();
