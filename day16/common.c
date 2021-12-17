@@ -74,3 +74,112 @@ int *stringToIntArray(char *input){
 int getArraySize(){
     return arraySize;
 }
+
+char *hexToBits(char *input){
+    int binSize=4*strlen(input)+1;
+    int bitPosition=0;
+    char *bits = malloc(sizeof(char)*binSize);
+    for(int i=0;i<strlen(input);i++){
+        switch(input[i]) {
+        case '0':
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='0';
+            break;
+        case '1':
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='1';
+            break;
+        case '2':
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='0';
+            break;
+        case '3':
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='1';
+            break;
+        case '4':
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='0';
+            break;
+        case '5':
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='1';
+            break;
+        case '6':
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='0';
+            break;
+        case '7':
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='1';
+            break;
+        case '8':
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='0';
+            break;
+        case '9':
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='1';
+            break;
+        case 'A':
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='0';
+            break;
+        case 'B':
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='1';
+            break;
+        case 'C':
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='0';
+            break;
+        case 'D':
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='0';
+            bits[bitPosition++]='1';
+            break;
+        case 'E':
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='0';
+            break;
+        case 'F':
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='1';
+            bits[bitPosition++]='1';
+            break;
+        }
+    }
+    bits[bitPosition]='\0';
+    return bits;
+}
+

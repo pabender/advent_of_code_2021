@@ -11,8 +11,8 @@ part1Tests: part1
 	./part1 testdata4.txt	
 	./part1 testdata5.txt	
 	./part1 testdata6.txt	
-part2: part2.c common.c
-	gcc part2.c common.c -o part2
+part2: part2.c common.c decoder.c
+	gcc part2.c common.c decoder.c -o part2
 runpart2: part2 part2Tests
 	./part2 input.txt
 part2Tests: part2
