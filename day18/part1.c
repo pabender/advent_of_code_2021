@@ -179,6 +179,11 @@ int traverseForSplit(snailfish *input){
     return retval;
 }
 
+snailfish *explode(snailfish *input){
+    printf("\nexplode %s\n\n",toString(*input));
+    return input;
+}
+
 snailfish *reduce(snailfish *input){
     int changed =0;
     do {
@@ -186,11 +191,12 @@ snailfish *reduce(snailfish *input){
             if(input->left->left!=NULL){
                if(input->left->left->left!=NULL){
                    if(input->left->left->left->left!=NULL){
-                       printf("explode left left left left\n");
+                       explode(input->left->left->left->left);
                    } else if(input->left->left->left->right!=NULL){
-                       printf("explode left left left right\n");
+                       explode(input->left->left->left->right);
                    }
                } else if(input->left->left->right!=NULL){
+                       explode(input->left->left->right);
                }
             } else if(input->left->right!=NULL){
             }
