@@ -179,34 +179,119 @@ int traverseForSplit(snailfish *input){
     return retval;
 }
 
-snailfish *explode(snailfish *input){
-    printf("\nexplode %s\n\n",toString(*input));
-    return input;
+int addToRightRegularNumber(snailfish *start,int value){
+    if(isLeaf(start)){
+       start->value+=value;
+       return 1;
+    } 
+    if(addToRightRegularNumber(start->left,value)!=0){
+       return 1;
+    }
+    if(addToRightRegularNumber(start->right,value)!=0){
+       return 1;
+    }
+    return 0;
+}
+
+int addToLeftRegularNumber(snailfish *start,int value){
+    if(isLeaf(start)){
+       start->value+=value;
+       return 1;
+    } 
+    if(addToLeftRegularNumber(start->right,value)!=0){
+       return 1;
+    }
+    if(addToLeftRegularNumber(start->left,value)!=0){
+       return 1;
+    }
+    return 0;
+}
+
+snailfish *lastLeaf = NULL;
+snailfish *valueToExplode = NULL;
+snailfish *nextLeaf = NULL;
+
+int explode(snailfish *input,int depth){
+        int changed=0;
+	if(isLeaf(input)){
+	   //printf("explod hit leaf\n");
+	   if(valueToExplode==NULL) {
+	      lastLeaf=input;
+	   } else if(nextLeaf==NULL){
+	      nextLeaf=input;
+	   }
+	   return changed;
+	}
+	if(depth==3){
+		if(!isLeaf(input->left)){
+		    printf("explode left pair %s\n",toString(*input->left));
+		    valueToExplode = input->left;
+		    addToRightRegularNumber(input->right,input->left->right->value);
+                    if(lastLeaf!=NULL){
+		       lastLeaf->value+=input->left->left->value;
+		    }
+		    input->left->value=0;
+		    input->left->left=NULL;
+		    input->left->right=NULL;
+		    return 1;
+		}
+		if(!isLeaf(input->right)) {
+		    printf("explode right pair %s\n",toString(*input->right));
+		    valueToExplode = input->right;
+		    input->left->value+=input->right->left->value;
+		    input->right->value=0;
+		    input->right->left=NULL;
+		    input->right->right=NULL;
+		    return 1;
+		}
+	}
+
+	if(changed = explode(input->left,depth+1)==0){
+	   changed = explode(input->right,depth+1);
+	}
+	return changed;
 }
 
 snailfish *reduce(snailfish *input){
     int changed =0;
     do {
-        if(input->left!=NULL){
-            if(input->left->left!=NULL){
-               if(input->left->left->left!=NULL){
-                   if(input->left->left->left->left!=NULL){
-                       explode(input->left->left->left->left);
-                   } else if(input->left->left->left->right!=NULL){
-                       explode(input->left->left->left->right);
-                   }
-               } else if(input->left->left->right!=NULL){
-                       explode(input->left->left->right);
-               }
-            } else if(input->left->right!=NULL){
-            }
-        } else if(input->right!=NULL){
-        }
-        if(changed!=0){
+	lastLeaf=NULL;
+        if((changed=explode(input,0))==0){
             changed=traverseForSplit(input);
         }
     } while(changed!=0);
     return input;
+}
+
+void explodeTest(){
+    snailfish *fishy = malloc(sizeof(snailfish));
+    fromString("[[[[[9,8],1],2],3],4]",fishy);
+    printf("%s exploded ",toString(*fishy));
+    explode(fishy,0);
+    printf("%s\n",toString(*fishy));
+
+    fishy = malloc(sizeof(snailfish));
+    fromString("[7,[6,[5,[4,[3,2]]]]]",fishy);
+    printf("%s exploded ",toString(*fishy));
+    explode(fishy,0);
+    printf("%s\n",toString(*fishy));
+
+    fishy = malloc(sizeof(snailfish));
+    fromString("[[6,[5,[4,[3,2]]]],1]",fishy);
+    printf("%s exploded ",toString(*fishy));
+    explode(fishy,0);
+    printf("%s\n",toString(*fishy));
+
+    fishy = malloc(sizeof(snailfish));
+    fromString("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]",fishy);
+    printf("%s exploded ",toString(*fishy));
+    explode(fishy,0);
+    printf("%s\n",toString(*fishy));
+    explode(fishy,0);
+    printf("%s\n",toString(*fishy));
+    printf("%s exploded ",toString(*fishy));
+    explode(fishy,0);
+    printf("%s\n",toString(*fishy));
 }
 
 int main(int argc,char **argv){
@@ -217,19 +302,20 @@ int main(int argc,char **argv){
    //stringTest();
    //magnitudeTest();
    //splitTest();
-   snailfish **fishvalues=malloc(sizeof(snailfish *)*input->size);
+   explodeTest();
+   /*snailfish **fishvalues=malloc(sizeof(snailfish *)*input->size);
 
    for(int i=0;i<input->size;i++){
      fishvalues[i] = malloc(sizeof(snailfish));
      fromString(input->data[i],fishvalues[i]);
-     //printf("%s magnitude %i\n",toString(*fishvalues[i]),magnitude(*fishvalues[i]));
+     printf("%s magnitude %i\n",toString(*fishvalues[i]),magnitude(*fishvalues[i]));
    }
 
    snailfish *result=fishvalues[0];
    for(int i=1;i<input->size;i++){
       result=reduce(addition(result,fishvalues[i]));
       printf("%s magnitude %i\n",toString(*result),magnitude(*result));
-   }
+   }*/
 
    return 0;
 }
