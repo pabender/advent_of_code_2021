@@ -1,4 +1,5 @@
 #include "common.h"
+#include "point.h"
 
 int main(int argc,char **argv){
 
