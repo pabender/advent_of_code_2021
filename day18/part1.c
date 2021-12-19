@@ -14,7 +14,7 @@ snailfish *addition(snailfish *input1,snailfish *input2){
 }
 
 int isLeaf(snailfish *input){
-    return (input->left==NULL && input->right==NULL);
+    return (input!=NULL && input->left==NULL && input->right==NULL);
 }
 
 snailfish *split(snailfish *input){
@@ -160,14 +160,17 @@ void splitTest(){
 
 int traverseForSplit(snailfish *input){
     int retval=0;
+
     if(isLeaf(input->left) && input->left->value>=10){
+	    //printf("%s before split \n",toString(input->left));
         input->left=split(input->left);
+	    //printf("%s after split \n",toString(input->left));
         printf("split\n");
         return 1;
     } else if(!isLeaf(input->left)){
         retval = traverseForSplit(input->left);
     }
-    if(retval!=0){
+    if(retval==0){
        if(isLeaf(input->right) && input->right->value>=10){
            input->right=split(input->right);
            printf("split\n");
@@ -179,84 +182,88 @@ int traverseForSplit(snailfish *input){
     return retval;
 }
 
-int addToRightRegularNumber(snailfish *start,int value){
-    if(isLeaf(start)){
-       start->value+=value;
-       return 1;
-    } 
-    if(addToRightRegularNumber(start->left,value)!=0){
-       return 1;
-    }
-    if(addToRightRegularNumber(start->right,value)!=0){
-       return 1;
-    }
-    return 0;
+int isPair(snailfish *input){
+	return (input!=NULL && 
+		!isLeaf(input) && 
+		isLeaf(input->left && 
+		isLeaf(input->right)));
 }
+        
+snailfish *explodeNode=NULL;
+snailfish *previousLeaf=NULL;
+snailfish *nextLeaf=NULL;
 
-int addToLeftRegularNumber(snailfish *start,int value){
-    if(isLeaf(start)){
-       start->value+=value;
-       return 1;
-    } 
-    if(addToLeftRegularNumber(start->right,value)!=0){
-       return 1;
-    }
-    if(addToLeftRegularNumber(start->left,value)!=0){
-       return 1;
-    }
-    return 0;
+void getExplodeComponents(snailfish *input,int depth){
+	//printf("depth %i\n",depth);
+        if(input==NULL) return;
+	if(isLeaf(input)){
+	   //printf("explod hit leaf %s\n",toString(*input));
+	   if(explodeNode==NULL) {
+	      //printf("set previous leaf to %s\n",toString(*input));
+	      previousLeaf=input;
+	   } else if(nextLeaf==NULL){
+	      //printf("set next leaf to %s\n",toString(*input));
+	      nextLeaf=input;
+	   }
+	   return;
+	}
+	if(depth==3) {
+           if(!isLeaf(input->left) && explodeNode==NULL){
+              //printf("set explode\n");
+	      explodeNode=input->left;
+	      getExplodeComponents(input->right,depth+1);
+	   }
+           if(!isLeaf(input->right) && explodeNode==NULL){
+              //printf("set explode\n");
+	      previousLeaf=input->left;
+	      explodeNode=input->right;
+	      return;
+	   }
+	}
+	getExplodeComponents(input->left,depth+1);
+	getExplodeComponents(input->right,depth+1);
 }
-
-snailfish *lastLeaf = NULL;
-snailfish *valueToExplode = NULL;
-snailfish *nextLeaf = NULL;
 
 int explode(snailfish *input,int depth){
         int changed=0;
-	if(isLeaf(input)){
-	   //printf("explod hit leaf\n");
-	   if(valueToExplode==NULL) {
-	      lastLeaf=input;
-	   } else if(nextLeaf==NULL){
-	      nextLeaf=input;
+
+        explodeNode=NULL;
+	previousLeaf=NULL;
+	nextLeaf=NULL;
+
+	//printf("explode\n");
+	getExplodeComponents(input,depth);
+	//printf("explode finished %p %p %p\n",previousLeaf,explodeNode,nextLeaf);
+
+        if(explodeNode!=NULL){
+	   changed=1;
+	   if(previousLeaf!=NULL){
+
+	      //printf("previous leaf before %s\n",toString(*previousLeaf));
+	      previousLeaf->value+=explodeNode->left->value;
+	      //printf("previous leaf after %s\n",toString(*previousLeaf));
 	   }
-	   return changed;
-	}
-	if(depth==3){
-		if(!isLeaf(input->left)){
-		    printf("explode left pair %s\n",toString(*input->left));
-		    valueToExplode = input->left;
-		    addToRightRegularNumber(input->right,input->left->right->value);
-                    if(lastLeaf!=NULL){
-		       lastLeaf->value+=input->left->left->value;
-		    }
-		    input->left->value=0;
-		    input->left->left=NULL;
-		    input->left->right=NULL;
-		    return 1;
-		}
-		if(!isLeaf(input->right)) {
-		    printf("explode right pair %s\n",toString(*input->right));
-		    valueToExplode = input->right;
-		    input->left->value+=input->right->left->value;
-		    input->right->value=0;
-		    input->right->left=NULL;
-		    input->right->right=NULL;
-		    return 1;
-		}
+	   if(nextLeaf!=NULL){
+	      //printf("next leaf before %s\n",toString(*nextLeaf));
+	      nextLeaf->value+=explodeNode->right->value;
+	      //printf("next leaf after %s\n",toString(*nextLeaf));
+	   }
+	      
+	   //printf("explode node before %s\n",toString(*explodeNode));
+	   explodeNode->value=0;
+	   explodeNode->left=NULL;
+	   explodeNode->right=NULL;
+	   //printf("explode node after %s\n",toString(*explodeNode));
 	}
 
-	if(changed = explode(input->left,depth+1)==0){
-	   changed = explode(input->right,depth+1);
-	}
 	return changed;
 }
 
 snailfish *reduce(snailfish *input){
     int changed =0;
     do {
-	lastLeaf=NULL;
-        if((changed=explode(input,0))==0){
+	//lastLeaf=NULL;
+        if((changed=explode(input,0))==0) {
             changed=traverseForSplit(input);
         }
     } while(changed!=0);
@@ -302,8 +309,8 @@ int main(int argc,char **argv){
    //stringTest();
    //magnitudeTest();
    //splitTest();
-   explodeTest();
-   /*snailfish **fishvalues=malloc(sizeof(snailfish *)*input->size);
+   //explodeTest();
+   snailfish **fishvalues=malloc(sizeof(snailfish *)*input->size);
 
    for(int i=0;i<input->size;i++){
      fishvalues[i] = malloc(sizeof(snailfish));
@@ -313,9 +320,11 @@ int main(int argc,char **argv){
 
    snailfish *result=fishvalues[0];
    for(int i=1;i<input->size;i++){
-      result=reduce(addition(result,fishvalues[i]));
-      printf("%s magnitude %i\n",toString(*result),magnitude(*result));
-   }*/
+      result=addition(result,fishvalues[i]);
+      printf("before reduce %s magnitude %i\n",toString(*result),magnitude(*result));
+      result=reduce(result);
+      printf("after reduce %s magnitude %i\n",toString(*result),magnitude(*result));
+   }
 
    return 0;
 }
