@@ -31,5 +31,6 @@ transform makeTransform(int a11,int a12,int a13,int a21,int a22,int a23,int a31,
 transform makeTransformFromColumnVectors(vector col1,vector col2,vector col3);
 point3d calculateTransform(point3d original,transform transformMatrix);
 vector vectorScalerMultiplication(vector v,int i);
+int equals(point3d point1,point3d point2);
 
 #endif
