@@ -6,13 +6,19 @@ typedef struct __image{
     char **pixels;
 } image;
 
+int itteration=0;
+
 char getPixel(image *input,int row,int column){
     //printf("get pixel %i %i\n",row,column);
     if( row < 0 || 
         column <0 || 
         row>=input->rows || 
         column>=input->columns){
+        if(itteration%2==1) {
            return '.';
+        } else {
+            return '#';
+        }
     }
     return input->pixels[row][column];
 }
@@ -67,8 +73,8 @@ image *enhance(image *input,char *enhancementAlgorithm){
 int getLightPixelCount(image *input){
     int count = 0;
     printf("getLightPixelCount %i %i\n",input->rows,input->columns);
-    for(int row=-5;row<input->rows+5;row++){
-        for(int column=-5;column<input->columns+5;column++){
+    for(int row=0;row<input->rows;row++){
+        for(int column=0;column<input->columns;column++){
             if(getPixel(input,row,column)=='#'){
                 count++;
             }
@@ -78,8 +84,8 @@ int getLightPixelCount(image *input){
 }
 
 void printImage(image *input){
-    for(int row=-5;row<input->rows+5;row++){
-        for(int column=-5;column<input->columns+5;column++){
+    for(int row=0;row<input->rows;row++){
+        for(int column=0;column<input->columns;column++){
            printf("%c",getPixel(input,row,column));
         }
         printf("\n");
@@ -99,6 +105,11 @@ int main(int argc,char **argv){
    printf("\n");
    printf("light pixel count %i\n",getLightPixelCount(enhancedImage));
    for(int i=0;i<2;i++){
+      if(enhancementAlgorithm[0]=='#'){
+           itteration=i+1;
+      } else {
+          itteration=1;
+      }
       enhancedImage = enhance(enhancedImage,enhancementAlgorithm);
       printImage(enhancedImage);
       printf("\n");
