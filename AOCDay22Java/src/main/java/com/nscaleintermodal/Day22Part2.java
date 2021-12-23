@@ -150,8 +150,10 @@ public class Day22Part2 {
 
 
     public double getCount() {
+        System.out.println("x " + uxmin + " " +uxmax + " y " +uymin +" " +uymax + " z " +uzmin + " " +uzmax);
         double count = 0;
         for(int x=uxmin;x<=uxmax;x++) {
+            System.out.println("working on x=" +x +".  xmax=" + uxmax);
             for(int y=uymin;y<=uymax;y++){
                 for(int z=uzmin;z<=uzmax;z++){
                     for( grid g:grids) {
