@@ -111,6 +111,22 @@ void printmap(probemap input){
     }
 }
 
+int mapcontains(probemap input, point3d probe){
+    for(int i=0;i<input.probeCount;i++){
+        if(equals(input.probePositions[i],probe)){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// need a method to find if 12 points in two maps match
+
+// need a method to try all posible rotations and point shifts 
+// to see if we have a match with a given map.
+
+// need a method to combine maps into a single map with a unique set of points.
+
 int main(int argc,char **argv){
 
    probemap scannerMaps[40];
@@ -127,6 +143,7 @@ int main(int argc,char **argv){
    printmap(scannerMaps[2]);
    printmap(rotatedmap);
 
+   printf("%i\n",1==1);
 
    return 0;
 }

@@ -1,8 +1,8 @@
 
-i
-java:S2095"LUse try-with-resources or close this "BufferedReader" in a "finally" clause.(¦…Ή8Ά―κύΫ/
-Z	java:S106G"9Replace this use of System.out or System.err by a logger.(ζΑλ‚ύÿÿÿÿ8ίÒµά/
-t
-java:S3776"RRefactor this method to reduce its Cognitive Complexity from 19 to the 15 allowed.(Κϋ±όÿÿÿÿ8υνΖÿΫ/
 {
 java:S2293F"YReplace the type specification in this constructor call with the diamond operator ("<>").(°Ά¨όÿÿÿÿ8ίÒµά/
+t
+java:S3776"RRefactor this method to reduce its Cognitive Complexity from 19 to the 15 allowed.(Κϋ±όÿÿÿÿ8υνΖÿΫ/
+Z	java:S106G"9Replace this use of System.out or System.err by a logger.(ζΑλ‚ύÿÿÿÿ8ίÒµά/
+i
+java:S2095"LUse try-with-resources or close this "BufferedReader" in a "finally" clause.(¦…Ή8Ά―κύΫ/

@@ -1,12 +1,12 @@
 
-S	java:S106V"9Replace this use of System.out or System.err by a logger.(ζΑλ‚ύÿÿÿÿ
-h
-java:S3776"RRefactor this method to reduce its Cognitive Complexity from 36 to the 15 allowed.(¶Θϋ
-V
-java:S2130E"9Use "Integer.parseInt" for this string-to-int conversion.(²ο¶8•’‚ά/
-t
-java:S2293U"YReplace the type specification in this constructor call with the diamond operator ("<>").(°Ά¨όÿÿÿÿ
 H
 java:S1172D"&Remove these unused method parameters.(¬―­φόÿÿÿÿ8΅Χ‡‚ά/
+S	java:S106V"9Replace this use of System.out or System.err by a logger.(ζΑλ‚ύÿÿÿÿ
+V
+java:S2130E"9Use "Integer.parseInt" for this string-to-int conversion.(²ο¶8•’‚ά/
+h
+java:S3776"RRefactor this method to reduce its Cognitive Complexity from 36 to the 15 allowed.(¶Θϋ
+t
+java:S2293U"YReplace the type specification in this constructor call with the diamond operator ("<>").(°Ά¨όÿÿÿÿ
 b
 java:S2095"LUse try-with-resources or close this "BufferedReader" in a "finally" clause.(¦…Ή
