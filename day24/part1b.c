@@ -4,10 +4,10 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-#define PARTS 32 
+#define PARTS 100
 
 typedef struct __alu {
-    int registers[4];
+    char registers[4][15000];
     char *input;
     int inputindex;
     list *program;
@@ -15,16 +15,16 @@ typedef struct __alu {
 } alu;
 
 void printState(alu *runner){
-   printf("w: %i x: %i y: %i z: %i\n",
+   printf("w: %s\n x: %s\n y: %s\ z: %s\n",
 		   runner->registers[0],runner->registers[1],
 		   runner->registers[2],runner->registers[3]);
 }
 
 void init(alu *runner,char *input,list *program){
-    runner->registers[0]=0;
-    runner->registers[1]=0;
-    runner->registers[2]=0;
-    runner->registers[3]=0;
+    runner->registers[0][0]='\0';
+    runner->registers[1][0]='\0';
+    runner->registers[2][0]='\0';
+    runner->registers[3][0]='\0';
     runner->input=input;
     runner->inputindex=0;
     runner->program=program;
@@ -32,47 +32,73 @@ void init(alu *runner,char *input,list *program){
 }
 
 void inp(alu *runner,int reg1){
-	runner->registers[reg1]=runner->input[runner->inputindex]-'0';
+	runner->registers[reg1][0]=runner->input[runner->inputindex];
+	runner->registers[reg1][1]='\0';
 	runner->inputindex++;
 }
 
 void mul(alu *runner,int reg1,int reg2,int value){
-	if(reg2!=-1){
-	   runner->registers[reg1]=runner->registers[reg1]*runner->registers[reg2];
-	} else {
-	   runner->registers[reg1]=runner->registers[reg1]*value;
+	if(strlen(runner->registers[reg1])>0){
+	   strcat(runner->registers[reg1],"*");
+	   if(reg2!=-1){
+	      strcat(runner->registers[reg1],runner->registers[reg2]);
+	   } else {
+	      char valueString[10];
+	      sprintf(valueString,"%i",value);
+	      strcat(runner->registers[reg1],valueString);
+	   }
 	}
 }
 
 void add(alu *runner,int reg1,int reg2,int value){
+	if(strlen(runner->registers[reg1])>0){
+	   strcat(runner->registers[reg1],"+");
+	}
 	if(reg2!=-1){
-	   runner->registers[reg1]=runner->registers[reg1]+runner->registers[reg2];
+	   strcat(runner->registers[reg1],runner->registers[reg2]);
 	} else {
-	   runner->registers[reg1]=runner->registers[reg1]+value;
+	   char valueString[10];
+	   sprintf(valueString,"%i",value);
+	   strcat(runner->registers[reg1],valueString);
 	}
 }
 
 void divide(alu *runner,int reg1,int reg2,int value){
-	if(reg2!=-1){
-	   runner->registers[reg1]=runner->registers[reg1]/runner->registers[reg2];
-	} else {
-	   runner->registers[reg1]=runner->registers[reg1]/value;
+	if(strlen(runner->registers[reg1])>0){
+	   strcat(runner->registers[reg1],"/");
+	   if(reg2!=-1){
+	      strcat(runner->registers[reg1],runner->registers[reg2]);
+	   } else {
+	      char valueString[10];
+	      sprintf(valueString,"%i",value);
+	      strcat(runner->registers[reg1],valueString);
+	   }
 	}
 }
 
 void mod(alu *runner,int reg1,int reg2,int value){
-	if(reg2!=-1){
-	   runner->registers[reg1]=runner->registers[reg1]%runner->registers[reg2];
-	} else {
-	   runner->registers[reg1]=runner->registers[reg1]%value;
+	if(strlen(runner->registers[reg1])>0){
+	   strcat(runner->registers[reg1],"%");
+	   if(reg2!=-1){
+	      strcat(runner->registers[reg1],runner->registers[reg2]);
+	   } else {
+	      char valueString[10];
+	      sprintf(valueString,"%i",value);
+	      strcat(runner->registers[reg1],valueString);
+	   }
 	}
 }
 
 void eql(alu *runner,int reg1,int reg2,int value){
-	if(reg2!=-1){
-	   runner->registers[reg1]=(runner->registers[reg1]==runner->registers[reg2])?1:0;
-	} else {
-	   runner->registers[reg1]=(runner->registers[reg1]==value)?1:0;
+	if(strlen(runner->registers[reg1])>0){
+	   strcat(runner->registers[reg1],"+");
+	   if(reg2!=-1){
+	      strcat(runner->registers[reg1],runner->registers[reg2]);
+	   } else {
+	      char valueString[10];
+	      sprintf(valueString,"%i",value);
+	      strcat(runner->registers[reg1],valueString);
+	   }
 	}
 }
 
@@ -82,7 +108,7 @@ void runProg(alu *runner){
       char instruction[4];
       char reg1;
       char reg2[10];
-      //printf("%s\n",runner->program->data[runner->programcounter]);
+      printf("%s\n",runner->program->data[runner->programcounter]);
       int conversions = sscanf(runner->program->data[runner->programcounter],"%[^ ] %c %[^ ]",
 		      instruction,&reg1,reg2);
       int reg1no=reg1-'w';
@@ -112,7 +138,7 @@ void runProg(alu *runner){
 	inp(runner,reg1no);
       }
 
-      //printState(runner);
+      printState(runner);
       runner->programcounter++;
     }while(runner->programcounter<runner->program->size);
 }
@@ -130,7 +156,7 @@ int main(int argc,char **argv){
    list *input = stringList(argv[1]);
    //printList(input);
 
-   long cieling=13579246899999;
+   /*long cieling=13579246899999;
    long floor=10000000000000;
 
    long quarter=(cieling-floor)/PARTS;
@@ -144,27 +170,27 @@ int main(int argc,char **argv){
       floor=floor+quarter;	     
    }
 
-   if(child==0) {
+   if(child==0) {*/
       alu *runner=malloc(sizeof(alu));  
-      for(long valid=cieling;valid>floor;valid--){
-         char validation[15];
-         sprintf(validation,"%014li",valid);
+      //for(long valid=cieling;valid>floor;valid--){
+         char validation[26];
+      /*   sprintf(validation,"%014li",valid);
          if(strstr(validation,"0")!=NULL) {
 	      continue;
-         }
+         }*/
          //printf("validating %s\n",validation);
-         init(runner,validation,input);
+         init(runner,"ABCDEFGHIJKLMNOP",input);
          runProg(runner);
          //printState(runner);
-         if(runner->registers[3]==0) {
-              printf("good %s\n",validation);
+         /*if(runner->registers[3]==0) {
+              printf("valid!!!! %s\n",validation);
 	      break;
-        }
-      }
-   }
+        }*/
+      //}
+   /*}
 
    int status;
-   while(wait(&status)!=0); 
+   while(wait(&status)!=0); */
 
    return 0;
 }
