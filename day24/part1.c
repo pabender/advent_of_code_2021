@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-#define PARTS 32 
+#define PARTS 100 
 
 typedef struct __alu {
     int registers[4];
@@ -125,28 +125,9 @@ long power(int base,int power){
     return result;
 }
 
-int main(int argc,char **argv){
-
-   list *input = stringList(argv[1]);
-   //printList(input);
-
-   long cieling=13579246899999;
-   long floor=10000000000000;
-
-   long quarter=(cieling-floor)/PARTS;
-   pid_t child;
-
-   for(int p=0;p<PARTS;p++){
-      if((child = fork())==0){
-         cieling=floor+quarter;
-	 break;
-      }
-      floor=floor+quarter;	     
-   }
-
-   if(child==0) {
+void findValidModelNumber(list *input,long floor,long ceiling){
       alu *runner=malloc(sizeof(alu));  
-      for(long valid=cieling;valid>floor;valid--){
+      for(long valid=ceiling;valid>floor;valid--){
          char validation[15];
          sprintf(validation,"%014li",valid);
          if(strstr(validation,"0")!=NULL) {
@@ -161,6 +142,30 @@ int main(int argc,char **argv){
 	      break;
         }
       }
+}
+
+int main(int argc,char **argv){
+
+   list *input = stringList(argv[1]);
+   //printList(input);
+
+   //long ceiling=99999999999999;
+   long ceiling=13579246899999;
+   //long floor=10000000000000;
+   //long floor=11932792943189;
+   long floor=12821698949199;
+   // answer for part 1: 12934998949199
+
+   long quarter=(ceiling-floor)/PARTS;
+   pid_t child;
+
+   for(int p=0;p<PARTS;p++){
+      if((child = fork())==0){
+         ceiling=floor+quarter;
+         findValidModelNumber(input,floor,ceiling);
+	 break;
+      }
+      floor=floor+quarter;	     
    }
 
    int status;
