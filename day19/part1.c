@@ -5,7 +5,7 @@ typedef struct __map {
     int scannerNumber;
     point3d scannerPosition;
     int probeCount;
-    point3d probePositions[100];
+    point3d probePositions[1000];
 } probemap;
 
 int buildScannerMapsFromInput(list *input,probemap *scannerMaps){
@@ -53,7 +53,7 @@ transform *getTransformMatricies(){
     vector negativeeye2=vectorScalerMultiplication(eye2,-1);
     vector negativeeye3=vectorScalerMultiplication(eye3,-1);
 
-    transform *retval=malloc(sizeof(transform)*24);
+    transform *retval=malloc(sizeof(transform)*48);
     retval[0]=makeTransformFromColumnVectors(eye1,eye2,eye3);
     retval[1]=makeTransformFromColumnVectors(eye1,eye3,eye2);
     retval[2]=makeTransformFromColumnVectors(eye2,eye1,eye3);
@@ -78,6 +78,30 @@ transform *getTransformMatricies(){
     retval[21]=makeTransformFromColumnVectors(eye2,negativeeye3,eye1);
     retval[22]=makeTransformFromColumnVectors(negativeeye3,eye1,eye2);
     retval[23]=makeTransformFromColumnVectors(negativeeye3,eye2,eye1);
+    retval[24]=makeTransformFromColumnVectors(negativeeye1,negativeeye2,eye3);
+    retval[25]=makeTransformFromColumnVectors(negativeeye1,eye3,negativeeye2);
+    retval[26]=makeTransformFromColumnVectors(negativeeye2,negativeeye1,eye3);
+    retval[27]=makeTransformFromColumnVectors(negativeeye2,eye3,negativeeye1);
+    retval[28]=makeTransformFromColumnVectors(negativeeye3,negativeeye1,eye2);
+    retval[29]=makeTransformFromColumnVectors(eye3,negativeeye2,negativeeye1);
+    retval[30]=makeTransformFromColumnVectors(eye1,negativeeye2,negativeeye3);
+    retval[31]=makeTransformFromColumnVectors(eye1,negativeeye3,negativeeye2);
+    retval[32]=makeTransformFromColumnVectors(negativeeye2,eye1,negativeeye3);
+    retval[33]=makeTransformFromColumnVectors(negativeeye2,negativeeye3,eye1);
+    retval[34]=makeTransformFromColumnVectors(negativeeye3,eye1,negativeeye2);
+    retval[35]=makeTransformFromColumnVectors(negativeeye3,negativeeye2,eye1);
+    retval[36]=makeTransformFromColumnVectors(negativeeye1,eye2,negativeeye3);
+    retval[37]=makeTransformFromColumnVectors(negativeeye1,negativeeye3,eye2);
+    retval[38]=makeTransformFromColumnVectors(eye2,negativeeye1,negativeeye3);
+    retval[39]=makeTransformFromColumnVectors(eye2,negativeeye3,negativeeye1);
+    retval[40]=makeTransformFromColumnVectors(negativeeye3,negativeeye1,eye2);
+    retval[41]=makeTransformFromColumnVectors(negativeeye3,eye2,negativeeye1);
+    retval[42]=makeTransformFromColumnVectors(negativeeye1,negativeeye2,negativeeye3);
+    retval[43]=makeTransformFromColumnVectors(negativeeye1,negativeeye3,negativeeye2);
+    retval[44]=makeTransformFromColumnVectors(negativeeye2,negativeeye1,negativeeye3);
+    retval[45]=makeTransformFromColumnVectors(negativeeye2,negativeeye3,negativeeye1);
+    retval[46]=makeTransformFromColumnVectors(negativeeye3,negativeeye1,negativeeye2);
+    retval[47]=makeTransformFromColumnVectors(negativeeye3,negativeeye2,negativeeye1);
     return retval;
 }
 
@@ -120,10 +144,54 @@ int mapcontains(probemap input, point3d probe){
     return 0;
 }
 
-// need a method to find if 12 points in two maps match
+int is12PointMatch(probemap original,probemap shifted){
+    int matches=0;
+    for(int i=0;i<shifted.probeCount;i++){
+        if(mapcontains(original,shifted.probePositions[i])){
+           matches++;
+        }
+    }
+    //if(matches >1) printf("matches %i %i: %i\n",original.scannerNumber,shifted.scannerNumber,matches);
+    return matches>11;
+}
 
 // need a method to try all posible rotations and point shifts 
 // to see if we have a match with a given map.
+probemap findMapMatch(probemap reference, probemap target){
+    transform *transforms=getTransformMatricies();
+
+    for(int i=0;i<48;i++){
+       probemap rotated = rotateMap(target,transforms[i]);
+       for(int j=0;j<reference.probeCount;j++){
+           for(int k=0;k<rotated.probeCount;k++){
+              point3d shift=subtractpoints(reference.probePositions[j],rotated.probePositions[k]);
+              probemap shifted = shiftMap(rotated,shift);
+              if(is12PointMatch(reference,shifted)!=0){
+                 shifted.scannerPosition.x=shift.x;
+                 shifted.scannerPosition.y=shift.y;
+                 shifted.scannerPosition.z=shift.z;
+                 return shifted;
+              }
+           }
+       }
+    }
+    return target;
+}
+
+probemap mergemaps(probemap input,probemap tomerge){
+    //printf("points in input map %i\n",input.probeCount);
+    //printf("points in tomerge map %i\n",tomerge.probeCount);
+    for(int i=0;i<tomerge.probeCount;i++){
+        if(!mapcontains(input,tomerge.probePositions[i])){
+           input.probePositions[input.probeCount]=tomerge.probePositions[i];
+           input.probeCount++;
+        }
+    }
+    printf("points in merged map %i\n",input.probeCount);
+    //printf("points in tomerge map %i\n",tomerge.probeCount);
+    return input;
+}
+
 
 // need a method to combine maps into a single map with a unique set of points.
 
@@ -136,14 +204,32 @@ int main(int argc,char **argv){
    int scannerCount = buildScannerMapsFromInput(input,scannerMaps);
    printf("scanners read %i\n",scannerCount);
 
-   transform *transforms=getTransformMatricies();
+   int mergedone=0;
 
-   probemap rotatedmap = rotateMap(scannerMaps[2],transforms[3]);
+   do {
+       printf("new pass\n");
+   mergedone=0;
+   for(int j=0;j<scannerCount;j++){
+      for(int i=0;i<scannerCount;i++){
+       if(i==j) continue;
+       //if(scannerMaps[i].scannerPosition.x!=0 || scannerMaps[i].scannerPosition.y!=0 || scannerMaps[i].scannerPosition.z!=0) continue;
+       //if(scannerMaps[j].scannerPosition.x!=0 || scannerMaps[j].scannerPosition.y!=0 || scannerMaps[j].scannerPosition.z!=0) continue;
+       probemap match = findMapMatch(scannerMaps[j],scannerMaps[i]);
+       if(match.scannerPosition.x!=0 || match.scannerPosition.y!=0 || match.scannerPosition.z!=0){
+           printf("matched %i %i\n",j,i);
+           match.scannerPosition.x=0;
+           match.scannerPosition.y=0;
+           match.scannerPosition.z=0;
+           scannerMaps[i]=match;
+           scannerMaps[j]=mergemaps(scannerMaps[j],match);
+           //printmap(scannerMaps[i]);
+           mergedone=1;
+       }
+       }
+     }
+   } while(mergedone==1);
 
-   printmap(scannerMaps[2]);
-   printmap(rotatedmap);
-
-   printf("%i\n",1==1);
+   printf("points in map zero: %i\n",scannerMaps[0].probeCount);
 
    return 0;
 }

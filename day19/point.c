@@ -1,4 +1,6 @@
 #include "point.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 point3d addpoints(point3d from ,point3d amount){
     return makePoint(from.x+amount.x,from.y+amount.y,from.z+amount.z);
