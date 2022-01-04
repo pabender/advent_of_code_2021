@@ -1,8 +1,11 @@
 #include "common.h"
 #include "point.h"
 
+#define TRANSFORMS 48
+
 typedef struct __map {
     int scannerNumber;
+    int mergedInto;
     point3d scannerPosition;
     int probeCount;
     point3d probePositions[1000];
@@ -11,27 +14,26 @@ typedef struct __map {
 int buildScannerMapsFromInput(list *input,probemap *scannerMaps){
     int currentScannerNo = 0;
     int lastScannerNo=0;
-    int probeCount = 0;
     int numScanners=0; 
     for(int i=0;i<input->size;i++){
         if(sscanf(input->data[i]," --- scanner %i ---",&currentScannerNo)==1){
-          scannerMaps[lastScannerNo].probeCount=probeCount;
           lastScannerNo=currentScannerNo;
           scannerMaps[currentScannerNo].scannerNumber=currentScannerNo;
-          probeCount=0;
+          scannerMaps[currentScannerNo].mergedInto=-1;
+          scannerMaps[currentScannerNo].probeCount=0;
+          scannerMaps[currentScannerNo].scannerPosition.x=0;
+          scannerMaps[currentScannerNo].scannerPosition.y=0;
+          scannerMaps[currentScannerNo].scannerPosition.z=0;
           numScanners++;
         } else {
           sscanf(input->data[i]," %i,%i,%i",
-                  &scannerMaps[lastScannerNo].probePositions[probeCount].x,
-                  &scannerMaps[lastScannerNo].probePositions[probeCount].y,
-                  &scannerMaps[lastScannerNo].probePositions[probeCount].z);
-          probeCount++;
+                  &scannerMaps[lastScannerNo].probePositions[scannerMaps[lastScannerNo].probeCount].x,
+                  &scannerMaps[lastScannerNo].probePositions[scannerMaps[lastScannerNo].probeCount].y,
+                  &scannerMaps[lastScannerNo].probePositions[scannerMaps[lastScannerNo].probeCount].z);
+          scannerMaps[lastScannerNo].probeCount++;
         }
     }
 
-    scannerMaps[0].scannerPosition.x=0;
-    scannerMaps[0].scannerPosition.y=0;
-    scannerMaps[0].scannerPosition.z=0;
     return numScanners;
 }
 
@@ -53,7 +55,9 @@ transform *getTransformMatricies(){
     vector negativeeye2=vectorScalerMultiplication(eye2,-1);
     vector negativeeye3=vectorScalerMultiplication(eye3,-1);
 
-    transform *retval=malloc(sizeof(transform)*48);
+    //printf("%s\n",toString(negativeeye3));
+
+    transform *retval=malloc(sizeof(transform)*TRANSFORMS);
     retval[0]=makeTransformFromColumnVectors(eye1,eye2,eye3);
     retval[1]=makeTransformFromColumnVectors(eye1,eye3,eye2);
     retval[2]=makeTransformFromColumnVectors(eye2,eye1,eye3);
@@ -138,6 +142,7 @@ void printmap(probemap input){
 int mapcontains(probemap input, point3d probe){
     for(int i=0;i<input.probeCount;i++){
         if(equals(input.probePositions[i],probe)){
+            //printf("map %i contains %s\n",input.scannerNumber,toString(probe));
             return 1;
         }
     }
@@ -160,10 +165,11 @@ int is12PointMatch(probemap original,probemap shifted){
 probemap findMapMatch(probemap reference, probemap target){
     transform *transforms=getTransformMatricies();
 
-    for(int i=0;i<48;i++){
+    for(int i=0;i<TRANSFORMS;i++){
        probemap rotated = rotateMap(target,transforms[i]);
        for(int j=0;j<reference.probeCount;j++){
            for(int k=0;k<rotated.probeCount;k++){
+              //printf("%s\n",toString(rotated.probePositions[k]));
               point3d shift=subtractpoints(reference.probePositions[j],rotated.probePositions[k]);
               probemap shifted = shiftMap(rotated,shift);
               if(is12PointMatch(reference,shifted)!=0){
@@ -187,7 +193,7 @@ probemap mergemaps(probemap input,probemap tomerge){
            input.probeCount++;
         }
     }
-    printf("points in merged map %i\n",input.probeCount);
+    //printf("points in merged map %i\n",input.probeCount);
     //printf("points in tomerge map %i\n",tomerge.probeCount);
     return input;
 }
@@ -212,15 +218,13 @@ int main(int argc,char **argv){
    for(int j=0;j<scannerCount;j++){
       for(int i=0;i<scannerCount;i++){
        if(i==j) continue;
-       //if(scannerMaps[i].scannerPosition.x!=0 || scannerMaps[i].scannerPosition.y!=0 || scannerMaps[i].scannerPosition.z!=0) continue;
-       //if(scannerMaps[j].scannerPosition.x!=0 || scannerMaps[j].scannerPosition.y!=0 || scannerMaps[j].scannerPosition.z!=0) continue;
+       if(scannerMaps[i].mergedInto!=-1) continue;
+       if(scannerMaps[j].mergedInto!=-1) continue;
        probemap match = findMapMatch(scannerMaps[j],scannerMaps[i]);
-       if(match.scannerPosition.x!=0 || match.scannerPosition.y!=0 || match.scannerPosition.z!=0){
+       if(is12PointMatch(scannerMaps[j],match)) {
            printf("matched %i %i\n",j,i);
-           match.scannerPosition.x=0;
-           match.scannerPosition.y=0;
-           match.scannerPosition.z=0;
            scannerMaps[i]=match;
+           scannerMaps[i].mergedInto=scannerMaps[j].scannerNumber;
            scannerMaps[j]=mergemaps(scannerMaps[j],match);
            //printmap(scannerMaps[i]);
            mergedone=1;
@@ -228,6 +232,10 @@ int main(int argc,char **argv){
        }
      }
    } while(mergedone==1);
+
+   for(int i=0;i<scannerCount;i++){
+       printf("scanner %i position %s merged into %i count %i\n",scannerMaps[i].scannerNumber,toString(scannerMaps[i].scannerPosition),scannerMaps[i].mergedInto,scannerMaps[i].probeCount);
+   }
 
    printf("points in map zero: %i\n",scannerMaps[0].probeCount);
 

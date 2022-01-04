@@ -1,4 +1,5 @@
 #include "point.h"
+#include "common.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -10,7 +11,7 @@ point3d subtractpoints(point3d from,point3d amount){
     return makePoint(from.x-amount.x,from.y-amount.y,from.z-amount.z);
 }
 
-point3d makePoint(int x,int y,int z){
+point3d makePoint(long x,long y,long z){
     point3d retval;
     retval.x=x;
     retval.y=y;
@@ -31,7 +32,7 @@ char *toString(point3d point){
 }
 
 
-transform makeTransform(int a11,int a12,int a13,int a21,int a22,int a23,int a31,int a32,int a33){
+transform makeTransform(long a11,long a12,long a13,long a21,long a22,long a23,long a31,long a32,long a33){
     transform retval;
     retval.a11=a11;
     retval.a12=a12;
@@ -75,13 +76,20 @@ point3d calculateTransform(point3d original,transform transformMatrix){
     return retval;
 }
 
-vector vectorScalerMultiplication(vector v,int i){
+vector vectorScalerMultiplication(vector v,long i){
     vector retval;
     retval.x = v.x*i;
     retval.y = v.y*i;
     retval.z = v.z*i;
+    return retval;
 }
 
-int equals(point3d point1,point3d point2){
+long equals(point3d point1,point3d point2){
     return point1.x==point2.x && point1.y==point2.y && point1.z==point2.z;
+}
+
+long distance(point3d point1,point3d point2){
+    return abs(point1.x-point2.x) +
+           abs(point1.y-point2.y) +
+           abs(point1.z-point2.z);
 }
